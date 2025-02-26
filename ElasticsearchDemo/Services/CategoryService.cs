@@ -45,7 +45,7 @@ namespace ElasticsearchDemo.Services
             try
             {
                 return await _dapperContext.Connection.QueryFirstOrDefaultAsync<Category>(
-                    "SELECT * FROM Categories WHERE CategoryId = @Id", 
+                    "SELECT * FROM Categories WHERE Id = @Id", 
                     new { Id = id });
             }
             catch (Exception ex)
@@ -64,9 +64,8 @@ namespace ElasticsearchDemo.Services
                     VALUES (@CategoryName, @Description, @CreatedDate);
                     SELECT CAST(SCOPE_IDENTITY() as int)";
 
-                category.CreatedDate = DateTime.UtcNow;
                 var categoryId = await _dapperContext.Connection.ExecuteScalarAsync<int>(sql, category);
-                category.CategoryId = categoryId;
+                category.Id = categoryId;
 
                 return category;
             }
@@ -81,7 +80,7 @@ namespace ElasticsearchDemo.Services
         {
             try
             {
-                category.SetId(id);
+                category.Id = id;
                 return await UpdateEntityAsync(category);
             }
             catch (Exception ex)
@@ -102,7 +101,7 @@ namespace ElasticsearchDemo.Services
                 }
 
                 var oldCategory = await _dapperContext.Connection.QueryFirstOrDefaultAsync<Category>(
-                    "SELECT * FROM Categories WHERE CategoryId = @Id",
+                    "SELECT * FROM Categories WHERE Id = @Id",
                     new { Id = id },
                     transaction);
 
@@ -110,7 +109,7 @@ namespace ElasticsearchDemo.Services
                     throw new KeyNotFoundException($"CategoryId: {id} bulunamadı");
 
                 await _dapperContext.Connection.ExecuteAsync(
-                    "DELETE FROM Categories WHERE CategoryId = @Id",
+                    "DELETE FROM Categories WHERE Id = @Id",
                     new { Id = id },
                     transaction);
 

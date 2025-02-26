@@ -35,9 +35,6 @@ builder.Services.AddSingleton<IElasticsearchService, ElasticsearchService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 
-// Add background service
-builder.Services.AddHostedService<ProductSyncBackgroundService>();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

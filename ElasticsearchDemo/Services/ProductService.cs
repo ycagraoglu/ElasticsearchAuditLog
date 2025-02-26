@@ -35,9 +35,8 @@ namespace ElasticsearchDemo.Services
                     VALUES (@ProductName, @Price, @Category, @CategoryId, @CreatedDate);
                     SELECT CAST(SCOPE_IDENTITY() as int)";
 
-                product.CreatedDate = DateTime.UtcNow;
                 var productId = await _dapperContext.Connection.QuerySingleAsync<int>(sql, product);
-                product.ProductId = productId;
+                product.Id = productId;
 
                 return product;
             }
@@ -56,7 +55,7 @@ namespace ElasticsearchDemo.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Ürün güncellenirken hata oluştu. ProductId: {product.ProductId}");
+                _logger.LogError(ex, $"Ürün güncellenirken hata oluştu. Id: {product.Id}");
                 throw;
             }
         }
@@ -67,15 +66,15 @@ namespace ElasticsearchDemo.Services
             try
             {
                 var oldProduct = await _dapperContext.Connection.QueryFirstOrDefaultAsync<Product>(
-                    "SELECT * FROM Products WHERE ProductId = @Id",
+                    "SELECT * FROM Products WHERE Id = @Id",
                     new { Id = productId },
                     transaction);
 
                 if (oldProduct == null)
-                    throw new KeyNotFoundException($"ProductId: {productId} bulunamadı");
+                    throw new KeyNotFoundException($"Id: {productId} bulunamadı");
 
                 await _dapperContext.Connection.ExecuteAsync(
-                    "DELETE FROM Products WHERE ProductId = @Id",
+                    "DELETE FROM Products WHERE Id = @Id",
                     new { Id = productId },
                     transaction);
 
@@ -92,24 +91,24 @@ namespace ElasticsearchDemo.Services
         {
             try
             {
-                const string sql = "SELECT * FROM Products WHERE ProductId = @ProductId";
+                const string sql = "SELECT * FROM Products WHERE Id = @Id";
 
                 var product = await _dapperContext.Connection.QuerySingleOrDefaultAsync<Product>(
                     sql, 
-                    new { ProductId = productId });
+                    new { Id = productId });
 
                 if (product == null)
                 {
-                    _logger.LogWarning($"Ürün bulunamadı. ProductId: {productId}");
-                    return null;
+                    _logger.LogWarning($"Ürün bulunamadı. Id: {productId}");
+                    throw new KeyNotFoundException($"Id: {productId} bulunamadı");
                 }
 
-                _logger.LogInformation($"Ürün başarıyla getirildi. ProductId: {productId}");
+                _logger.LogInformation($"Ürün başarıyla getirildi. Id: {productId}");
                 return product;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Ürün getirilirken hata oluştu. ProductId: {productId}");
+                _logger.LogError(ex, $"Ürün getirilirken hata oluştu. Id: {productId}");
                 throw;
             }
         }
