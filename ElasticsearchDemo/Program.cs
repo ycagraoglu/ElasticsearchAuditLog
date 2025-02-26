@@ -30,7 +30,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddSingleton<IElasticsearchService, ElasticsearchService>();
 
 // Database services
-builder.Services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
+builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
 builder.Services.AddScoped<IDapperContext, DapperContext>();
 builder.Services.AddHttpContextAccessor();
 
