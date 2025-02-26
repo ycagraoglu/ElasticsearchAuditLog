@@ -1,15 +1,19 @@
-using System.Data;
 using Dapper;
 using ElasticsearchDemo.Models;
-using ElasticsearchDemo.Services;
+using System.Data;
+using Humanizer;
 
 namespace ElasticsearchDemo.Services.Database
 {
     public static class DapperExtensions
     {
-        public static async Task<T> UpdateWithAuditAsync<T>(
-            this IDapperContext dapperContext,
-            T entity) where T : BaseModel
+        private static string GetTableName<T>() where T : BaseModel
+        {
+            var entityName = typeof(T).Name;
+            return entityName.Pluralize();
+        }
+
+        public static async Task<T> UpdateWithAuditAsync<T>(this IDapperContext dapperContext, T entity) where T : BaseModel
         {
             ArgumentNullException.ThrowIfNull(dapperContext);
             ArgumentNullException.ThrowIfNull(entity);
@@ -18,7 +22,7 @@ namespace ElasticsearchDemo.Services.Database
             try
             {
                 // Tablo adını entity'den al
-                var tableName = typeof(T).Name + "s";  // Categories, Products vs.
+                var tableName = GetTableName<T>();
 
                 // Mevcut veriyi al
                 var oldEntity = await dapperContext.Connection.QueryFirstOrDefaultAsync<T>(
@@ -49,7 +53,7 @@ namespace ElasticsearchDemo.Services.Database
                 };
 
                 await dapperContext.ElasticsearchService.CheckExistsAndInsertLogAsync(
-                    logModel, 
+                    logModel,
                     $"{tableName.ToLower()}_updates");
 
                 dapperContext.CommitTransaction();
@@ -71,7 +75,7 @@ namespace ElasticsearchDemo.Services.Database
             var transaction = await dapperContext.BeginTransactionAsync();
             try
             {
-                var tableName = typeof(T).Name + "s";
+                var tableName = GetTableName<T>();
 
                 // Mevcut veriyi al
                 var oldEntity = await dapperContext.Connection.QueryFirstOrDefaultAsync<T>(
@@ -101,7 +105,7 @@ namespace ElasticsearchDemo.Services.Database
                 };
 
                 await dapperContext.ElasticsearchService.CheckExistsAndInsertLogAsync(
-                    logModel, 
+                    logModel,
                     $"{tableName.ToLower()}_updates");
 
                 dapperContext.CommitTransaction();
@@ -139,4 +143,4 @@ namespace ElasticsearchDemo.Services.Database
             };
         }
     }
-} 
+}

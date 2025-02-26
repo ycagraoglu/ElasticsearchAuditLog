@@ -1,5 +1,6 @@
 using System;
 using ElasticsearchDemo.Services;
+using ElasticsearchDemo.Services.Database;
 
 namespace ElasticsearchDemo.Models
 {
