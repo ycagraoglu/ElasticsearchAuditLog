@@ -1,10 +1,7 @@
 using Dapper;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ElasticsearchDemo.Models;
 using ElasticsearchDemo.Services.Database;
-using System.Data;
 
 namespace ElasticsearchDemo.Services
 {
@@ -17,14 +14,17 @@ namespace ElasticsearchDemo.Services
         Task<IEnumerable<Product>> GetAllProductsAsync();
     }
 
-    public class ProductService : BaseUpdateService<Product>, IProductService
+    public class ProductService : IProductService
     {
+        private readonly ILogger<ProductService> _logger;
+        private readonly IDapperContext _dapperContext;
+
         public ProductService(
             ILogger<ProductService> logger,
-            IElasticsearchService elasticsearchService,
             IDapperContext dapperContext)
-            : base(logger, elasticsearchService, dapperContext)
         {
+            _logger = logger;
+            _dapperContext = dapperContext;
         }
 
         public async Task<Product> AddProductAsync(Product product)
@@ -52,7 +52,7 @@ namespace ElasticsearchDemo.Services
         {
             try
             {
-                return await UpdateEntityAsync(product);
+                return await _dapperContext.Connection.UpdateWithAuditAsync(product, _dapperContext);
             }
             catch (Exception ex)
             {
@@ -63,27 +63,13 @@ namespace ElasticsearchDemo.Services
 
         public async Task DeleteProductAsync(int productId)
         {
-            var transaction = await _dapperContext.BeginTransactionAsync();
             try
             {
-                var oldProduct = await _dapperContext.Connection.QueryFirstOrDefaultAsync<Product>(
-                    "SELECT * FROM Products WHERE Id = @Id",
-                    new { Id = productId },
-                    transaction);
-
-                if (oldProduct == null)
-                    throw new KeyNotFoundException($"Id: {productId} bulunamadı");
-
-                await _dapperContext.Connection.ExecuteAsync(
-                    "DELETE FROM Products WHERE Id = @Id",
-                    new { Id = productId },
-                    transaction);
-
-                _dapperContext.CommitTransaction();
+                await _dapperContext.Connection.DeleteWithAuditAsync<Product>(productId, _dapperContext);
             }
-            catch
+            catch (Exception ex)
             {
-                _dapperContext.RollbackTransaction();
+                _logger.LogError(ex, $"Ürün silinirken hata oluştu: {productId}");
                 throw;
             }
         }
