@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ElasticsearchDemo.Models;
 using ElasticsearchDemo.Services.Database;
+using System.Data;
 
 namespace ElasticsearchDemo.Services
 {

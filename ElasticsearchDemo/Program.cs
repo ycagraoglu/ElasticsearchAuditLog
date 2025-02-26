@@ -26,12 +26,14 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// Add services
+builder.Services.AddSingleton<IElasticsearchService, ElasticsearchService>();
+
 // Database services
 builder.Services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddScoped<IDapperContext, DapperContext>();
 
-// Add services
-builder.Services.AddSingleton<IElasticsearchService, ElasticsearchService>();
+// Business services
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 

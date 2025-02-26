@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using ElasticsearchDemo.Models;
 using ElasticsearchDemo.Services.Database;
 using Dapper;
+using System.Data;
 
 namespace ElasticsearchDemo.Services
 {
@@ -14,17 +15,23 @@ namespace ElasticsearchDemo.Services
         Task<Category> CreateCategoryAsync(Category category);
         Task<Category> UpdateCategoryAsync(int id, Category category);
         Task DeleteCategoryAsync(int id);
-        Task<bool> HasProductsAsync(int categoryId);
+        Task<bool> CategoryHasProductsAsync(int categoryId);
     }
 
-    public class CategoryService : BaseUpdateService<Category>, ICategoryService
+    public class CategoryService : ICategoryService
     {
+        private readonly IDapperContext _dapperContext;
+        private readonly IElasticsearchService _elasticsearchService;
+        private readonly ILogger<CategoryService> _logger;
+
         public CategoryService(
-            ILogger<CategoryService> logger,
+            IDapperContext dapperContext,
             IElasticsearchService elasticsearchService,
-            IDapperContext dapperContext)
-            : base(logger, elasticsearchService, dapperContext)
+            ILogger<CategoryService> logger)
         {
+            _dapperContext = dapperContext;
+            _elasticsearchService = elasticsearchService;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
@@ -81,7 +88,7 @@ namespace ElasticsearchDemo.Services
             try
             {
                 category.Id = id;
-                return await UpdateEntityAsync(category);
+                return await _dapperContext.Connection.UpdateWithAuditAsync(category, _dapperContext);
             }
             catch (Exception ex)
             {
@@ -92,37 +99,23 @@ namespace ElasticsearchDemo.Services
 
         public async Task DeleteCategoryAsync(int id)
         {
-            var transaction = await _dapperContext.BeginTransactionAsync();
             try
             {
-                if (await HasProductsAsync(id))
+                if (await CategoryHasProductsAsync(id))
                 {
                     throw new InvalidOperationException($"CategoryId: {id} kategorisine bağlı ürünler var. Önce bu ürünleri silmelisiniz.");
                 }
 
-                var oldCategory = await _dapperContext.Connection.QueryFirstOrDefaultAsync<Category>(
-                    "SELECT * FROM Categories WHERE Id = @Id",
-                    new { Id = id },
-                    transaction);
-
-                if (oldCategory == null)
-                    throw new KeyNotFoundException($"CategoryId: {id} bulunamadı");
-
-                await _dapperContext.Connection.ExecuteAsync(
-                    "DELETE FROM Categories WHERE Id = @Id",
-                    new { Id = id },
-                    transaction);
-
-                _dapperContext.CommitTransaction();
+                await _dapperContext.Connection.DeleteWithAuditAsync<Category>(id, _dapperContext);
             }
-            catch
+            catch (Exception ex)
             {
-                _dapperContext.RollbackTransaction();
+                _logger.LogError(ex, $"Kategori silinirken hata oluştu: {id}");
                 throw;
             }
         }
 
-        public async Task<bool> HasProductsAsync(int categoryId)
+        public async Task<bool> CategoryHasProductsAsync(int categoryId)
         {
             try
             {
