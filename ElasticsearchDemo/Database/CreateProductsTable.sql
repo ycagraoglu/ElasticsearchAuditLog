@@ -5,10 +5,11 @@ USE ProductDB;
 GO
 
 CREATE TABLE Products (
-    ProductId INT IDENTITY(1,1) PRIMARY KEY,
+    Id INT IDENTITY(1,1) PRIMARY KEY,
     ProductName NVARCHAR(100) NOT NULL,
     Price DECIMAL(18,2) NOT NULL,
     Category NVARCHAR(50) NOT NULL,
+    CategoryId INT,
     CreatedDate DATETIME NOT NULL,
     UpdatedDate DATETIME NULL
 );

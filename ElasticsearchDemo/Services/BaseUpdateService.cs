@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Dapper;
 using System.Text.RegularExpressions;
 using ElasticsearchDemo.Services.Database;
+using ElasticsearchDemo.Models;
 
 namespace ElasticsearchDemo.Services
 {
@@ -15,14 +16,7 @@ namespace ElasticsearchDemo.Services
         }
     }
 
-    public interface IBaseEntity
-    {
-        int GetId();
-        void SetId(int id);
-        void SetUpdatedDate(DateTime date);
-    }
-
-    public abstract class BaseUpdateService<T> where T : class, IBaseEntity
+    public abstract class BaseUpdateService<T> where T : BaseModel
     {
         protected readonly ILogger _logger;
         protected readonly IElasticsearchService _elasticsearchService;
@@ -57,7 +51,7 @@ namespace ElasticsearchDemo.Services
         protected virtual string UpdateSql => $@"
             UPDATE {TableName} 
             SET {string.Join(",", GetUpdateColumns())}
-            WHERE {TableName}Id = @{TableName}Id";
+            WHERE Id = @Id";
 
         protected virtual string TableName => _defaultTableName;
         protected virtual string LogIndexName => _defaultLogIndexName;
@@ -65,7 +59,7 @@ namespace ElasticsearchDemo.Services
         private IEnumerable<string> GetUpdateColumns()
         {
             var properties = typeof(T).GetProperties()
-                .Where(p => p.Name != $"{TableName}Id" && p.Name != "CreatedDate")
+                .Where(p => p.Name != "Id" && p.Name != "CreatedDate")
                 .Select(p => $"{p.Name} = @{p.Name}");
 
             return properties;
@@ -100,14 +94,14 @@ namespace ElasticsearchDemo.Services
             try
             {
                 var oldEntity = await _dapperContext.Connection.QueryFirstOrDefaultAsync<T>(
-                    $"SELECT * FROM {TableName} WITH (UPDLOCK) WHERE {TableName}Id = @Id",
-                    new { Id = entity.GetId() },
+                    $"SELECT * FROM {TableName} WITH (UPDLOCK) WHERE Id = @Id",
+                    new { entity.Id },
                     transaction);
 
                 if (oldEntity == null)
-                    throw new KeyNotFoundException($"{TableName}Id: {entity.GetId()} bulunamadı");
+                    throw new KeyNotFoundException($"{TableName} Id: {entity.Id} bulunamadı");
 
-                entity.SetUpdatedDate(DateTime.UtcNow);
+                entity.UpdatedDate = DateTime.UtcNow;
 
                 await _dapperContext.Connection.ExecuteAsync(
                     UpdateSql,
@@ -116,7 +110,7 @@ namespace ElasticsearchDemo.Services
 
                 var logModel = new
                 {
-                    EntityId = entity.GetId(),
+                    EntityId = entity.Id,
                     ClassName = TableName,
                     Operation = "Update",
                     OldData = oldEntity,
