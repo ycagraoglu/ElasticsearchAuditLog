@@ -4,6 +4,11 @@
 *.userosscache
 *.sln.docstates
 
+# Application Settings
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
