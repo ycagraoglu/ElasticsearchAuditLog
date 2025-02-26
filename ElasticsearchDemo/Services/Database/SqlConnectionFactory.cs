@@ -1,0 +1,31 @@
+using System.Data;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
+
+namespace ElasticsearchDemo.Services.Database
+{
+    public class SqlConnectionFactory : IDbConnectionFactory
+    {
+        private readonly string _connectionString;
+
+        public SqlConnectionFactory(IConfiguration configuration)
+        {
+            _connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new ArgumentNullException(nameof(configuration), "Connection string 'DefaultConnection' not found.");
+        }
+
+        public async Task<IDbConnection> CreateConnectionAsync()
+        {
+            var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+            return connection;
+        }
+
+        public IDbConnection CreateConnection()
+        {
+            var connection = new SqlConnection(_connectionString);
+            connection.Open();
+            return connection;
+        }
+    }
+} 
