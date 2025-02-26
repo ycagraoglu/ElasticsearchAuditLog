@@ -86,7 +86,7 @@ namespace ElasticsearchDemo.Services
             try
             {
                 category.Id = id;
-                return await _dapperContext.Connection.UpdateWithAuditAsync(category, _dapperContext);
+                return await _dapperContext.UpdateWithAuditAsync(category);
             }
             catch (Exception ex)
             {
@@ -104,7 +104,7 @@ namespace ElasticsearchDemo.Services
                     throw new InvalidOperationException($"CategoryId: {id} kategorisine bağlı ürünler var. Önce bu ürünleri silmelisiniz.");
                 }
 
-                await _dapperContext.Connection.DeleteWithAuditAsync<Category>(id, _dapperContext);
+                await _dapperContext.DeleteWithAuditAsync<Category>(id);
             }
             catch (Exception ex)
             {

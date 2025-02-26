@@ -8,13 +8,11 @@ namespace ElasticsearchDemo.Services.Database
     public static class DapperExtensions
     {
         public static async Task<T> UpdateWithAuditAsync<T>(
-            this IDbConnection connection,
-            T entity,
-            IDapperContext dapperContext) where T : BaseModel
+            this IDapperContext dapperContext,
+            T entity) where T : BaseModel
         {
-            ArgumentNullException.ThrowIfNull(connection);
-            ArgumentNullException.ThrowIfNull(entity);
             ArgumentNullException.ThrowIfNull(dapperContext);
+            ArgumentNullException.ThrowIfNull(entity);
 
             var transaction = await dapperContext.BeginTransactionAsync();
             try
@@ -23,7 +21,7 @@ namespace ElasticsearchDemo.Services.Database
                 var tableName = typeof(T).Name + "s";  // Categories, Products vs.
 
                 // Mevcut veriyi al
-                var oldEntity = await connection.QueryFirstOrDefaultAsync<T>(
+                var oldEntity = await dapperContext.Connection.QueryFirstOrDefaultAsync<T>(
                     $"SELECT * FROM {tableName} WITH (UPDLOCK) WHERE Id = @Id",
                     new { entity.Id },
                     transaction);
@@ -33,7 +31,7 @@ namespace ElasticsearchDemo.Services.Database
 
                 // Update işlemini yap
                 entity.UpdatedDate = DateTime.UtcNow;
-                await connection.ExecuteAsync(
+                await dapperContext.Connection.ExecuteAsync(
                     GetUpdateSql<T>(tableName),
                     entity,
                     transaction);
@@ -65,11 +63,9 @@ namespace ElasticsearchDemo.Services.Database
         }
 
         public static async Task DeleteWithAuditAsync<T>(
-            this IDbConnection connection,
-            int id,
-            IDapperContext dapperContext) where T : BaseModel
+            this IDapperContext dapperContext,
+            int id) where T : BaseModel
         {
-            ArgumentNullException.ThrowIfNull(connection);
             ArgumentNullException.ThrowIfNull(dapperContext);
 
             var transaction = await dapperContext.BeginTransactionAsync();
@@ -78,7 +74,7 @@ namespace ElasticsearchDemo.Services.Database
                 var tableName = typeof(T).Name + "s";
 
                 // Mevcut veriyi al
-                var oldEntity = await connection.QueryFirstOrDefaultAsync<T>(
+                var oldEntity = await dapperContext.Connection.QueryFirstOrDefaultAsync<T>(
                     $"SELECT * FROM {tableName} WITH (UPDLOCK) WHERE Id = @Id",
                     new { Id = id },
                     transaction);
@@ -87,7 +83,7 @@ namespace ElasticsearchDemo.Services.Database
                     throw new KeyNotFoundException($"{tableName} Id: {id} bulunamadı");
 
                 // Delete işlemini yap
-                await connection.ExecuteAsync(
+                await dapperContext.Connection.ExecuteAsync(
                     $"DELETE FROM {tableName} WHERE Id = @Id",
                     new { Id = id },
                     transaction);

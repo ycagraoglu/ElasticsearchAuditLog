@@ -52,7 +52,7 @@ namespace ElasticsearchDemo.Services
         {
             try
             {
-                return await _dapperContext.Connection.UpdateWithAuditAsync(product, _dapperContext);
+                return await _dapperContext.UpdateWithAuditAsync(product);
             }
             catch (Exception ex)
             {
@@ -65,7 +65,7 @@ namespace ElasticsearchDemo.Services
         {
             try
             {
-                await _dapperContext.Connection.DeleteWithAuditAsync<Product>(productId, _dapperContext);
+                await _dapperContext.DeleteWithAuditAsync<Product>(productId);
             }
             catch (Exception ex)
             {
