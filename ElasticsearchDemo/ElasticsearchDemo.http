@@ -1,6 +1,81 @@
 @ElasticsearchDemo_HostAddress = http://localhost:5258
+@baseUrl = https://localhost:5001
 
 GET {{ElasticsearchDemo_HostAddress}}/weatherforecast/
+Accept: application/json
+
+### Kategori İşlemleri ###
+
+### Tüm kategorileri getir
+GET {{baseUrl}}/api/category
+Accept: application/json
+
+### Kategori detayını getir
+GET {{baseUrl}}/api/category/1
+Accept: application/json
+
+### Yeni kategori oluştur
+POST {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+    "categoryName": "Elektronik",
+    "description": "Elektronik ürünler kategorisi"
+}
+
+### Kategori güncelle
+PUT {{baseUrl}}/api/category/1
+Content-Type: application/json
+
+{
+    "categoryName": "Elektronik Eşya",
+    "description": "Elektronik ürünler ve aksesuarlar"
+}
+
+### Kategori sil
+DELETE {{baseUrl}}/api/category/1
+
+### Kategori güncelleme geçmişini getir
+GET {{baseUrl}}/api/category/1/update-history
+Accept: application/json
+
+### Ürün İşlemleri ###
+
+### Tüm ürünleri getir
+GET {{baseUrl}}/api/product
+Accept: application/json
+
+### Ürün detayını getir
+GET {{baseUrl}}/api/product/1
+Accept: application/json
+
+### Yeni ürün oluştur
+POST {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+    "productName": "Laptop",
+    "price": 15000.00,
+    "category": "Elektronik",
+    "categoryId": 1
+}
+
+### Ürün güncelle
+PUT {{baseUrl}}/api/product/1
+Content-Type: application/json
+
+{
+    "productName": "Gaming Laptop",
+    "price": 17500.00,
+    "category": "Elektronik",
+    "categoryId": 1
+}
+
+### Ürün sil
+DELETE {{baseUrl}}/api/product/1
+
+### Ürün güncelleme geçmişini getir
+GET {{baseUrl}}/api/product/1/update-history
 Accept: application/json
 
 ###

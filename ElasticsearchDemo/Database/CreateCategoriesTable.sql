@@ -10,11 +10,7 @@ CREATE TABLE Categories (
 );
 GO
 
--- Products tablosuna CategoryId foreign key ekliyoruz
-ALTER TABLE Products
-ADD CategoryId INT;
-GO
-
+-- Products tablosundaki CategoryId'ye foreign key ekliyoruz
 ALTER TABLE Products
 ADD CONSTRAINT FK_Products_Categories
 FOREIGN KEY (CategoryId) REFERENCES Categories(Id);
