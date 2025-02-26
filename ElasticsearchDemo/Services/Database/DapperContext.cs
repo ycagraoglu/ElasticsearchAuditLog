@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
 
 namespace ElasticsearchDemo.Services.Database
 {
@@ -12,15 +13,18 @@ namespace ElasticsearchDemo.Services.Database
         private bool _disposed;
 
         public IElasticsearchService ElasticsearchService { get; }
+        public IHttpContextAccessor HttpContextAccessor { get; }
 
         public DapperContext(
             IDbConnectionFactory connectionFactory,
             ILogger<DapperContext> logger,
-            IElasticsearchService elasticsearchService)
+            IElasticsearchService elasticsearchService,
+            IHttpContextAccessor httpContextAccessor)
         {
             _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             ElasticsearchService = elasticsearchService ?? throw new ArgumentNullException(nameof(elasticsearchService));
+            HttpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         public IDbConnection Connection

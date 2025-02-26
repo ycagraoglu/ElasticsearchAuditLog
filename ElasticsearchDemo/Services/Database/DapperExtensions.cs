@@ -45,7 +45,7 @@ namespace ElasticsearchDemo.Services.Database
                     OldData = oldEntity,
                     NewData = entity,
                     UpdatedDate = DateTime.UtcNow,
-                    UpdatedBy = "system"
+                    UpdatedBy = dapperContext.HttpContextAccessor.HttpContext?.User?.Identity?.Name ?? "system"
                 };
 
                 await dapperContext.ElasticsearchService.CheckExistsAndInsertLogAsync(
@@ -97,7 +97,7 @@ namespace ElasticsearchDemo.Services.Database
                     OldData = oldEntity,
                     NewData = (object?)null,
                     UpdatedDate = DateTime.UtcNow,
-                    UpdatedBy = "system"
+                    UpdatedBy = dapperContext.HttpContextAccessor.HttpContext?.User?.Identity?.Name ?? "system"
                 };
 
                 await dapperContext.ElasticsearchService.CheckExistsAndInsertLogAsync(

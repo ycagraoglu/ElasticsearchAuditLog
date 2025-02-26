@@ -32,6 +32,7 @@ builder.Services.AddSingleton<IElasticsearchService, ElasticsearchService>();
 // Database services
 builder.Services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddScoped<IDapperContext, DapperContext>();
+builder.Services.AddHttpContextAccessor();
 
 // Business services
 builder.Services.AddScoped<IProductService, ProductService>();
