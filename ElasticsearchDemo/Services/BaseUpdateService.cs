@@ -59,10 +59,20 @@ namespace ElasticsearchDemo.Services
         private IEnumerable<string> GetUpdateColumns()
         {
             var properties = typeof(T).GetProperties()
-                .Where(p => p.Name != "Id" && p.Name != "CreatedDate")
+                .Where(p => !IsExcludedFromUpdate(p.Name))
                 .Select(p => $"{p.Name} = @{p.Name}");
 
             return properties;
+        }
+
+        private bool IsExcludedFromUpdate(string propertyName)
+        {
+            return propertyName switch
+            {
+                "Id" => true,
+                "CreatedDate" => true,
+                _ => false
+            };
         }
 
         private async Task EnsureTableExistsAsync()
